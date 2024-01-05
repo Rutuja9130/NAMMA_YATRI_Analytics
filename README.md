@@ -45,7 +45,7 @@ Highest Trips in Area and Duration: Identifying the area with the highest number
 Highest Fare, Cancellation, and Trips by Location: Finding the location with the highest total fare, cancellation by customers, and cancellation by drivers.
 
 Skills Demonstrated
-SQL querying for data analysis.
-Statistical analysis of ride-sharing data.
-Understanding user behavior and preferences.
-Deriving insights for business optimization.
+1.SQL querying for data analysis.
+2.Statistical analysis of ride-sharing data.
+3.Understanding user behavior and preferences.
+4.Deriving insights for business optimization.
