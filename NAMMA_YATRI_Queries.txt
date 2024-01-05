@@ -1,0 +1,61 @@
+#TOTAL NUMBER OF TRIPS HAPPENED
+
+SELECT COUNT(tripid) as Total_no_of_trips FROM trips_details WHERE end_ride = 1;
+
+ # IS THERE ANY DUPLICATE TRIPS IN TRIP DETAILS
+ SELECT tripid , count(tripid) as cnt FROM trips_details GROUP BY tripid HAVING count(tripid)>1;
+
+# TOTAL NO OF DRIVERS 
+SELECT COUNT(DISTINCT driverid) as Total_no_of_drivers FROM trips_details;
+
+# TOTAL EARNINGS
+SELECT sum(fare) as fare FROM trips;
+
+#TOTAL COMPLETED TRIPS 
+SELECT COUNT(end_ride) as Completed_trips FROM trips_details WHERE end_ride=1;
+
+#TOTAL NUMBER OF SEARCHES
+SELECT sum(searches) as searches FROM trips_details;
+
+# TOTAL DISTANCE PER TRIP
+SELECT avg(distance) FROM trips;
+
+#WHICH IS THE MOST USED PAYMENT METHOD
+SELECT a.id,a.method,b.count_of_method FROM payment a INNER JOIN   
+(SELECT faremethod,COUNT(faremethod) as count_of_method FROM trips GROUP BY faremethod order by COUNT(DISTINCT tripid) DESC LIMIT 1)b ON a.id = b.faremethod;
+
+# HIGHEST PAYMENT METHOD WAS DONE FROM WHICH INSTRUMENT
+SELECT a.id, a.method ,b.fare FROM payment a INNER JOIN (SELECT * FROM trips ORDER BY FARE DESC LIMIT 2)b ON a.id = b.faremethod;
+
+#WHICH TWO LOCATIONS HAD THE MOST TRIPS
+SELECT * FROM (SELECT *, dense_rank() OVER (order by no_of_rides DESC) as rnk FROM (SELECT loc_from,loc_to,COUNT(DISTINCT tripid)as no_of_rides FROM trips GROUP BY loc_from,loc_to )a)b WHERE rnk =1;
+
+
+#TOP 5 EARNING DRIVERS
+SELECT driverid,total_earning,rnk FROM (SELECT *,dense_rank()OVER(ORDER BY total_earning DESC) as rnk FROM (SELECT DISTINCT driverid, SUM(fare) as total_earning FROM trips GROUP BY driverid)a)b WHERE rnk<6;
+
+#WHICH DURATION HAD THE MOST NO. OF TRIPS
+SELECT a.id,a.duration,b.total_trips FROM duration a INNER JOIN (SELECT duration, COUNT(DISTINCT tripid) as total_trips FROM trips GROUP BY duration)b ON a.id=b.duration ORDER BY b.total_trips DESC LIMIT 1;
+
+#WHICH DRIVER CUSTOMER PAIR HAD THE MOST ORDERS
+SELECT driverid, custid,total_trips, rnk FROM (SELECT *,dense_rank() OVER(ORDER BY total_trips DESC) as rnk FROM (SELECT driverid, custid, COUNT(DISTINCT tripid) total_trips FROM trips GROUP BY driverid,custid )a)b WHERE rnk = 1; 
+
+#SEARCH TO ESTIMATE RATE 
+SELECT  (SUM(searches_got_estimate)/SUM(searches))*100 as search_estimate_percentage FROM trips_details;
+
+#ESTIMATE RATE TO SEARCH FOR 
+SELECT  (SUM(searches_for_quotes)/SUM(searches_got_estimate))*100 as search_for_percentage FROM trips_details;
+
+#WHICH AREA GOT HIGHEST TRIPS IN WHICH DURATION 
+SELECT * FROM (SELECT *,dense_rank() OVER (ORDER BY a.total_trips DESC)as rnk FROM (SELECT a.loc_from,b.duration,a.total_trips FROM (SELECT loc_from, duration,COUNT(tripid) as total_trips FROM trips GROUP BY loc_from, duration)a INNER JOIN duration b ON a.duration = b.id)a)b WHERE rnk=1;
+
+#WHICH AREA GOT HIGHEST FARE, CANCELLATION AND TRIPS
+SELECT * FROM (SELECT *, dense_rank() OVER (ORDER BY total_fare DESC) as rnk FROM (SELECT loc_from, SUM(fare) total_fare FROM trips GROUP BY loc_from)a)b WHERE rnk =1; 
+
+
+SELECT * FROM (SELECT *, dense_rank() OVER (ORDER BY total_cancel_by_customer DESC) AS rnk FROM (SELECT loc_from , COUNT(tripid) as total_cancel_by_customer FROM trips_details WHERE customer_not_cancelled = 0 GROUP BY loc_from)a)b WHERE rnk =1;
+
+SELECT * FROM (SELECT *, dense_rank() OVER (ORDER BY total_cancel_by_driver DESC) AS rnk FROM (SELECT loc_from , COUNT(tripid) as total_cancel_by_driver FROM trips_details WHERE driver_not_cancelled = 0 GROUP BY loc_from)a)b WHERE rnk =1;
+
+#WHICH LOCATION GOT THE HIGHEST TRIPS AND FARE
+SELECT * FROM (SELECT *, dense_rank() OVER(ORDER BY total_fare DESC) AS rnk FROM (SELECT duration,SUM(fare) total_fare,COUNT(tripid) as total_trips FROM trips GROUP BY duration)a)b WHERE rnk=1;
